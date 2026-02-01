@@ -1,15 +1,15 @@
-name: Build APK
-on: [push, workflow_dispatch] # 支援手動觸發，方便測試
+name: Build Penguin Bus APK
+on: [push, workflow_dispatch]
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4 # 升級到 v4
+        uses: actions/checkout@v4
 
       - name: Setup Java
-        uses: actions/setup-java@v4 # APK 打包需要 Java 環境
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
@@ -20,17 +20,24 @@ jobs:
           channel: 'stable'
 
       - name: Install Python
-        uses: actions/setup-python@v5 # 升級到 v5
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - name: Install Flet and Build APK
+      - name: Install Dependencies
         run: |
           pip install flet
+          # 如果你有用到其他庫（如 requests），請在這裡加上 pip install requests
+
+      - name: Build APK
+        run: |
+          # 解決之前截圖中遇到的 Git 權限問題
+          git config --global --add safe.directory /opt/hostedtoolcache/flutter/stable-linux
+          # 開始打包
           flet build apk --verbose
 
       - name: Upload APK
-        uses: actions/upload-artifact@v4 # 關鍵修正：升級到 v4
+        uses: actions/upload-artifact@v4 # 修正 image_6ace7b.png 的 v3 報錯
         with:
-          name: penguin-bus-app-release
+          name: penguin-bus-app
           path: build/apk/*.apk
